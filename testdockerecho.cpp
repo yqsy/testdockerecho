@@ -111,7 +111,7 @@ int main() {
 	if (setnonblock(listen_fd) < 0) {
 		err(1, "failed to set server socket to non-blocking");
 	}
-	
+
 	struct event ev_accept;
 	event_set(&ev_accept, listen_fd, EV_READ|EV_PERSIST, on_accept, NULL);
 	event_add(&ev_accept, NULL);
@@ -119,4 +119,3 @@ int main() {
 	event_dispatch();
     return 0;
 }
-

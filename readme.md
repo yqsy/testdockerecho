@@ -11,7 +11,7 @@
 # 构建
 docker build -t yqsy/testdockerecho:1.0 .
 # 运行
-docker run -it yqsy/testdockerecho:1.0
+docker run -p 5555:5555 -it yqsy/testdockerecho:1.0
 #　查看
 docker run -it yqsy/testdockerecho:1.0 bash
 # 列出文件大小

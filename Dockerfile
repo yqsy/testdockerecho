@@ -1,15 +1,29 @@
 FROM ubuntu:18.04 as build
 
-COPY . /tmp/testdockerecho
-
 COPY ./sources.list /tmp/sources.list
 
 RUN set -ex; \
     rm /etc/apt/sources.list; cp /tmp/sources.list /etc/apt/sources.list; \
     apt-get update; \
-    apt-get install -y autoconf automake autotools-dev build-essential checkinstall; \
+    apt-get install -y autoconf automake libtool autotools-dev \
+    build-essential checkinstall wget; \
     rm -rf /var/lib/apt/lists/*
 
+# libevent 2.1.9
+RUN set -ex; \
+    cd /tmp; \
+    wget https://github.com/libevent/libevent/releases/download/release-2.1.9-beta/libevent-2.1.9-beta.tar.gz; \
+    tar zxf libevent-2.1.9-beta.tar.gz; \
+    cd libevent-2.1.9-beta; \
+    ./autogen.sh; \
+    ./configure --disable-shared; \
+    make; \
+    make install; \
+    rm -rf /tmp/libevent-2.1.9-beta
+
+COPY . /tmp/testdockerecho
+
+# compile testdockerecho
 RUN set -ex; \
     cd /tmp/testdockerecho; \
     ./autogen.sh; \
@@ -28,5 +42,7 @@ RUN set-ex; \
     apt-get update; \
     apt-get install /tmp/testdockerecho_0.1.0-1_amd64.deb; \
     rm -rf /var/lib/apt/lists/*
+
+EXPOSE 5555
 
 CMD testdockerecho
