@@ -16,7 +16,10 @@
 
 #include <event.h>
 
+#include <string>
+
 #include <glog/logging.h>
+#include <libconfig.h++>
 
 struct client {
 	struct event ev_read;
@@ -86,12 +89,21 @@ void on_accept(int fd, short ev, void *arg)
 }
 
 int main(int argc, char* argv[]) {
+
+	libconfig::Config cfg;
+	cfg.readFile("/etc/testdockerecho/testdockerecho.cfg");
+
+    std::string listenaddr = cfg.lookup("server.listenaddr");
+	int listenport = cfg.lookup("server.listenport");
+
+	LOG(INFO) << "listen: " << listenaddr << ":" << listenport;
+
 	FLAGS_logtostderr = true;
 	// FLAGS_colorlogtostderr = false;
 
 	google::InitGoogleLogging("testdockerecho");
 
-	LOG(INFO) << "program: " << argv[0] << "starting";
+	LOG(INFO) << "program: " << argv[0] << "start echo";
 
 	event_init();
 	int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -107,8 +119,8 @@ int main(int argc, char* argv[]) {
 	struct sockaddr_in listen_addr;
 	memset(&listen_addr, 0, sizeof(listen_addr));
 	listen_addr.sin_family = AF_INET;
-	listen_addr.sin_addr.s_addr = INADDR_ANY;
-	listen_addr.sin_port = htons(5555);
+	listen_addr.sin_addr.s_addr = inet_addr(listenaddr.c_str());
+	listen_addr.sin_port = htons(listenport);
 
 	if (bind(listen_fd, (struct sockaddr *)&listen_addr, sizeof(listen_addr)) < 0) {
 		LOG(FATAL) << "bind failed";

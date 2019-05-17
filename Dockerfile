@@ -9,7 +9,7 @@ RUN set -ex; \
     rm /etc/apt/sources.list; cp /tmp/sources.list /etc/apt/sources.list; \
     apt-get update; \
     apt-get install -y autoconf automake libtool autotools-dev \
-    build-essential checkinstall wget libgoogle-glog-dev; \
+    build-essential checkinstall wget libgoogle-glog-dev libconfig++-dev; \
     rm -rf /var/lib/apt/lists/*
 
 # libevent 2.1.9
@@ -40,12 +40,13 @@ COPY --from=build /tmp/testdockerecho/testdockerecho_0.1.0-1_amd64.deb /tmp/
 
 COPY ./sources.list /tmp/sources.list
 
-RUN set-ex; \
+RUN set -ex; \
     rm /etc/apt/sources.list; cp /tmp/sources.list /etc/apt/sources.list; \
     apt-get update; \
-    apt-get install /tmp/testdockerecho_0.1.0-1_amd64.deb; \
+    apt-get install -y /tmp/testdockerecho_0.1.0-1_amd64.deb; \
+    apt-get install -y libgoogle-glog0v5 libconfig++9v5 apache2-utils;\
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 5555
 
-CMD testdockerecho
+CMD testdockerecho 2>&1 | rotatelogs -ve /var/log/testdockerecho/testdockerecho.log-%Y%m%d 86400
