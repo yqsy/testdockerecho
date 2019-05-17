@@ -2,11 +2,14 @@ FROM ubuntu:18.04 as build
 
 COPY ./sources.list /tmp/sources.list
 
+# -e, 遇到错误时退出
+# -x, 打印执行语句 
+
 RUN set -ex; \
     rm /etc/apt/sources.list; cp /tmp/sources.list /etc/apt/sources.list; \
     apt-get update; \
     apt-get install -y autoconf automake libtool autotools-dev \
-    build-essential checkinstall wget; \
+    build-essential checkinstall wget libgoogle-glog-dev; \
     rm -rf /var/lib/apt/lists/*
 
 # libevent 2.1.9

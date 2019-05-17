@@ -16,6 +16,8 @@
 
 #include <event.h>
 
+#include <glog/logging.h>
+
 struct client {
 	struct event ev_read;
 };
@@ -41,23 +43,23 @@ void on_read(int fd, short ev, void *arg)
 	
     int len = read(fd, buf, sizeof(buf));
 	if (len == 0) {
-		printf("Client disconnected.\n");
+		LOG(INFO) << "Client disconnected.";
         close(fd);        
 		event_del(&client->ev_read);
 		free(client);
 		return;
 	}
 	else if (len < 0) {
-		printf("Socket failure, disconnecting client: %s",
-		strerror(errno));
+		LOG(WARNING) << "Socket failure, disconnecting client: " << strerror(errno);
 		close(fd);
 		event_del(&client->ev_read);
-		free(client);		return;
+		free(client);		
+		return;
 	}
 
     int wlen = write(fd, buf, len);
     if (wlen < len) {
-        printf("Short write, not all data echoed back to client.\n");
+		LOG(WARNING) << "Short write, not all data echoed back to client.";
     }
 }
 
@@ -68,31 +70,38 @@ void on_accept(int fd, short ev, void *arg)
 	
 	int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_len);
 	if (client_fd == -1) {
-		warn("accept failed");
+		LOG(WARNING) << "accept failed";
 		return;
 	}
 
 	if (setnonblock(client_fd) < 0) {
-		warn("failed to set client socket non-blocking");
+		LOG(WARNING) << "failed to set client socket non-blocking";
 	}
 
 	struct client *client = (struct client *)calloc(1, sizeof(*client));
 
 	event_set(&client->ev_read, client_fd, EV_READ | EV_PERSIST, on_read, client);
 	event_add(&client->ev_read, NULL);
-	printf("Accepted connection from %s\n", inet_ntoa(client_addr.sin_addr));
+	LOG(INFO) << "Accepted connection from " << inet_ntoa(client_addr.sin_addr);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+	FLAGS_logtostderr = true;
+	// FLAGS_colorlogtostderr = false;
+
+	google::InitGoogleLogging("testdockerecho");
+
+	LOG(INFO) << "program: " << argv[0] << "starting";
+
 	event_init();
 	int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listen_fd < 0) {
-		err(1, "listen failed");
+		LOG(FATAL) << "listen failed";
 	}
 
 	int reuseaddr_on = 1;
 	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr_on, sizeof(reuseaddr_on)) == -1) {
-		err(1, "setsockopt failed");
+		LOG(FATAL) << "setsockopt failed";
 	}
 
 	struct sockaddr_in listen_addr;
@@ -102,14 +111,15 @@ int main() {
 	listen_addr.sin_port = htons(5555);
 
 	if (bind(listen_fd, (struct sockaddr *)&listen_addr, sizeof(listen_addr)) < 0) {
-		err(1, "bind failed");
+		LOG(FATAL) << "bind failed";
 	}
+
 	if (listen(listen_fd, 5) < 0) {
-		err(1, "listen failed");
+		LOG(FATAL) << "listen failed";
 	}
-		
+
 	if (setnonblock(listen_fd) < 0) {
-		err(1, "failed to set server socket to non-blocking");
+		LOG(FATAL) << "failed to set server socket to non-blocking";
 	}
 
 	struct event ev_accept;

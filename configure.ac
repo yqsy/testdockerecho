@@ -13,6 +13,7 @@ AC_PROG_CC
 # Checks for libraries.
 AC_CHECK_LIB([event],[main],,AC_MSG_ERROR(libevent missing))
 AC_CHECK_LIB([event_pthreads],[main],,AC_MSG_ERROR(libevent_pthreads missing))
+AC_CHECK_LIB([glog],[main],,AC_MSG_ERROR(glog missing))
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.
