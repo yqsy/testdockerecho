@@ -3,19 +3,21 @@
 - [1. 说明](#1-说明)
 - [2. 普通操作](#2-普通操作)
 - [3. 容器操作](#3-容器操作)
+- [4. 基于docker-compose](#4-基于docker-compose)
 
 <!-- /TOC -->
 
 
 # 1. 说明
 
-这是一个docker实例项目,容器内跑了一个基于c++写的简单的echo服务.
+这是一个docker实例项目,容器内跑了一个基于c++写的简单的echo服务. 服务一般
 
 目的是为了实践:
 
 * 容器内配置文件的读取  - 通过映射系统文件来进行读取.
 * 容器日志的输出 - 通过Lograte切分stdout/stderr并持久化到日志文件
 * image推送到私有服务器, 并在另一端从私有服务器上拉取下来
+* 日志索引 - elk elasticsearch logstash kibana
 
 # 2. 普通操作
 
@@ -118,18 +120,24 @@ docker push 192.168.0.213:5000/yqsy/testdockerecho:1.0
 # 拉取
 docker pull 192.168.0.213:5000/yqsy/testdockerecho:1.0
 
-# 拉取后运行
-docker run -it --rm  -p 5555:5555 \
-    -v /env/testdockerecho/cfg/:/etc/testdockerecho/ \
-    -v /env/testdockerecho/log/:/var/log/testdockerecho/ \
-    --name testdockerecho \
-    192.168.0.213:5000/yqsy/testdockerecho:1.0
+# 重新标记
+docker tag 192.168.0.213:5000/yqsy/testdockerecho:1.0  yqsy/testdockerecho:1.0
+```
 
-# 拉取后运行守护
-docker run -dt --rm  -p 5555:5555 \
-    -v /env/testdockerecho/cfg/:/etc/testdockerecho/ \
-    -v /env/testdockerecho/log/:/var/log/testdockerecho/ \
-    --name testdockerecho \
-    192.168.0.213:5000/yqsy/testdockerecho:1.0
+# 4. 基于docker-compose
+
+```bash
+
+# 前端运行
+docker-compose up
+
+# 后端运行
+docker-compose up -d 
+
+# 关闭
+docker-compose
+
+# 删除
+docker-compose rm -f
 
 ```

@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  testdockerecho:
+    image: yqsy/testdockerecho:1.0
+    ports:
+      - 5555:5555
+    volumes:
+      - /env/testdockerecho/cfg:/etc/testdockerecho/
+      - /env/testdockerecho/log/:/var/log/testdockerecho/
